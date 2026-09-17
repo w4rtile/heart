@@ -1,7 +1,96 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Terminal, Lock, Heart as HeartIcon, Sparkles } from 'lucide-react';
+import { Lock, Pause, Play, Volume2 } from 'lucide-react';
 import TextHeart from './components/TextHeart';
+
+const melody = [
+  { note: 261.63, beats: 2 }, { note: 329.63, beats: 2 },
+  { note: 392, beats: 3 }, { note: 329.63, beats: 1 },
+  { note: 293.66, beats: 2 }, { note: 349.23, beats: 2 },
+  { note: 440, beats: 3 }, { note: 392, beats: 1 },
+  { note: 329.63, beats: 2 }, { note: 392, beats: 2 },
+  { note: 523.25, beats: 2 }, { note: 493.88, beats: 2 },
+  { note: 440, beats: 2 }, { note: 392, beats: 2 },
+  { note: 329.63, beats: 4 },
+];
+
+function MusicPlayer() {
+  const [playing, setPlaying] = useState(false);
+  const contextRef = useRef<AudioContext | null>(null);
+  const timerRef = useRef<number | null>(null);
+  const stepRef = useRef(0);
+
+  const stop = useCallback(() => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = null;
+    setPlaying(false);
+  }, []);
+
+  const playNext = useCallback(function scheduleNote() {
+    const context = contextRef.current;
+    if (!context) return;
+    const { note, beats } = melody[stepRef.current % melody.length];
+    const now = context.currentTime;
+    const duration = beats * 0.32;
+    const gain = context.createGain();
+    const tone = context.createOscillator();
+    const warmth = context.createOscillator();
+    tone.type = 'sine';
+    warmth.type = 'triangle';
+    tone.frequency.value = note;
+    warmth.frequency.value = note / 2;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.045, now + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    tone.connect(gain);
+    warmth.connect(gain);
+    gain.connect(context.destination);
+    tone.start(now);
+    warmth.start(now);
+    tone.stop(now + duration);
+    warmth.stop(now + duration);
+    stepRef.current += 1;
+    timerRef.current = window.setTimeout(scheduleNote, duration * 1000);
+  }, []);
+
+  const toggle = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (playing) return stop();
+    if (!contextRef.current) contextRef.current = new AudioContext();
+    await contextRef.current.resume();
+    setPlaying(true);
+    playNext();
+  };
+
+  useEffect(() => () => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    void contextRef.current?.close();
+  }, []);
+
+  return (
+    <button className={`music-player ${playing ? 'is-playing' : ''}`} onClick={toggle} aria-label={playing ? 'Müziği duraklat' : 'Müziği çal'}>
+      <span className="music-icon">{playing ? <Pause size={15} /> : <Play size={15} fill="currentColor" />}</span>
+      <span className="music-copy"><strong>bizim melodimiz</strong><small>{playing ? 'şimdi çalıyor' : 'dinlemek için dokun'}</small></span>
+      <span className="sound-bars" aria-hidden="true"><i /><i /><i /><i /></span>
+    </button>
+  );
+}
+
+function HeartbeatLine() {
+  return (
+    <div className="heartbeat-wrap" aria-hidden="true">
+      <div className="heartbeat-label"><Volume2 size={12} /><span>72 BPM</span></div>
+      <svg viewBox="0 0 900 100" preserveAspectRatio="none">
+        <motion.path
+          d="M0 52 H235 L250 48 L263 54 L279 52 L294 83 L316 12 L337 70 L354 52 H900"
+          initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 2.4, delay: 1.2, ease: 'easeInOut' }}
+        />
+      </svg>
+      <span className="heartbeat-pulse" />
+    </div>
+  );
+}
 
 const Typewriter = ({ text, delay = 50, onComplete }: { text: string, delay?: number, onComplete?: () => void }) => {
   const [currentText, setCurrentText] = useState("");
@@ -108,6 +197,8 @@ export default function App() {
             animate={{ opacity: 1 }}
             className="relative w-full h-screen flex items-center justify-center overflow-hidden"
           >
+            <div className="mira-backdrop" aria-hidden="true">MİRA</div>
+            <HeartbeatLine />
             <TextHeart />
             
             <motion.div
@@ -116,8 +207,9 @@ export default function App() {
               transition={{ delay: 3, duration: 1.5 }}
               className="z-20 text-center"
             >
+              <p className="reveal-kicker">yalnızca senin için</p>
               <h2 className="text-pink-deep font-mono text-xl tracking-[0.3em] uppercase glow-text mb-2">
-                Decrypted
+                MİRA
               </h2>
               <div className="w-12 h-px bg-pink-deep/30 mx-auto mb-8" />
               
@@ -128,9 +220,11 @@ export default function App() {
                 }}
                 className="text-white/20 hover:text-white/60 transition-colors uppercase text-[10px] tracking-widest font-mono"
               >
-                Re-encrypt
+                yeniden şifrele
               </motion.button>
             </motion.div>
+
+            <MusicPlayer />
 
             {/* Subtle tech overlays */}
             <div className="absolute top-8 left-8 text-[10px] font-mono text-white/10 uppercase tracking-widest space-y-1">
@@ -140,7 +234,7 @@ export default function App() {
             </div>
             
             <div className="absolute bottom-8 right-8 text-[10px] font-mono text-white/10 uppercase tracking-widest">
-                heart_reveal // success
+                heart_reveal // mira
             </div>
           </motion.div>
         )}
@@ -148,4 +242,3 @@ export default function App() {
     </div>
   );
 }
-
