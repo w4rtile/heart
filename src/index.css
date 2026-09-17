@@ -1,14 +1,119 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600&family=Playfair+Display:ital,wght@1,300;1,600&family=Space+Grotesk:wght@300;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,400&family=Fira+Code:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Cormorant Garamond", Georgia, serif;
   --font-mono: "Fira Code", monospace;
   --font-display: "Space Grotesk", sans-serif;
   
   --color-pink-soft: #ff8fb1;
   --color-pink-deep: #ff4d6d;
   --color-brand-red: #ff003c;
+}
+
+.mira-backdrop {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -52%);
+  z-index: 0;
+  color: transparent;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(10rem, 35vw, 34rem);
+  font-weight: 300;
+  line-height: .7;
+  letter-spacing: -.08em;
+  white-space: nowrap;
+  -webkit-text-stroke: 1.5px rgba(255, 143, 177, .22);
+  text-shadow: 0 0 40px rgba(255, 77, 109, .13), 0 0 120px rgba(255, 31, 143, .09);
+  animation: mira-breathe 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes mira-breathe {
+  0%, 100% { opacity: .72; transform: translate(-50%, -52%) scale(1); }
+  12% { opacity: 1; transform: translate(-50%, -52%) scale(1.018); }
+  24% { opacity: .78; transform: translate(-50%, -52%) scale(1); }
+  34% { opacity: .9; transform: translate(-50%, -52%) scale(1.01); }
+  48% { opacity: .72; transform: translate(-50%, -52%) scale(1); }
+}
+
+.reveal-kicker {
+  margin-bottom: .7rem;
+  color: rgba(255,255,255,.3);
+  font-family: "Cormorant Garamond", serif;
+  font-size: .95rem;
+  font-style: italic;
+  letter-spacing: .15em;
+}
+
+.heartbeat-wrap {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  transform: translateY(-50%);
+  opacity: .9;
+  pointer-events: none;
+}
+
+.heartbeat-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  border-top: 1px solid rgba(255, 77, 109, .08);
+}
+
+.heartbeat-wrap svg { width: 100%; height: 100%; overflow: visible; }
+.heartbeat-wrap path { fill: none; stroke: url(#neon-heartbeat); vector-effect: non-scaling-stroke; }
+.heartbeat-base { stroke-width: 1.8; filter: drop-shadow(0 0 3px #ff1f8f) drop-shadow(0 0 9px rgba(50,246,255,.65)); }
+.heartbeat-energy { stroke-width: 4; stroke-linecap: round; stroke-dasharray: 4 145; filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 12px #ff4df0); animation: energy-run 2.2s linear infinite; }
+.heartbeat-label { position: absolute; right: 2rem; top: .2rem; display: flex; align-items: center; gap: .45rem; color: #54f8ff; text-shadow: 0 0 8px #32f6ff; font: 9px "Fira Code", monospace; letter-spacing: .18em; }
+.heartbeat-pulse { position: absolute; top: 47px; width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px #fff, 0 0 18px #ff1f8f; animation: beat-dot 1.05s ease-out infinite; }
+.pulse-one { left: 17.5%; }.pulse-two { left: 71.5%; animation-delay: -.52s; }
+
+@keyframes energy-run { to { stroke-dashoffset: -149; } }
+
+@keyframes beat-dot { 0%, 38%, 100% { transform: scale(.6); opacity: .55; } 10% { transform: scale(2.4); opacity: 1; box-shadow: 0 0 12px #fff, 0 0 28px #ff1f8f, 0 0 42px #32f6ff; } 18% { transform: scale(1.25); } 24% { transform: scale(1.8); } }
+
+.music-player {
+  position: absolute;
+  z-index: 30;
+  bottom: 2rem;
+  left: 2rem;
+  display: grid;
+  grid-template-columns: 34px auto 32px;
+  align-items: center;
+  gap: .8rem;
+  min-width: 220px;
+  padding: .65rem .8rem;
+  border: 1px solid rgba(255,143,177,.16);
+  background: rgba(10, 5, 7, .62);
+  color: rgba(255,255,255,.72);
+  backdrop-filter: blur(14px);
+  transition: border-color .3s ease, background .3s ease, transform .3s ease;
+}
+.music-player:hover { transform: translateY(-2px); border-color: rgba(255,143,177,.4); background: rgba(18,7,11,.82); }
+.music-icon { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(255,77,109,.32); border-radius: 50%; color: #ff8fb1; }
+.music-copy { display: flex; flex-direction: column; align-items: flex-start; gap: .18rem; }
+.music-copy strong { font: 500 9px "Fira Code", monospace; letter-spacing: .12em; text-transform: uppercase; }
+.music-copy small { color: rgba(255,255,255,.28); font: italic 12px "Cormorant Garamond", serif; }
+.sound-bars { display: flex; align-items: center; justify-content: flex-end; gap: 2px; height: 18px; }
+.sound-bars i { width: 2px; height: 4px; background: #ff4d6d; opacity: .35; transform-origin: center; }
+.is-playing .sound-bars i { animation: sound-bar .8s ease-in-out infinite alternate; }
+.is-playing .sound-bars i:nth-child(2) { animation-delay: -.3s; }.is-playing .sound-bars i:nth-child(3) { animation-delay: -.55s; }.is-playing .sound-bars i:nth-child(4) { animation-delay: -.15s; }
+@keyframes sound-bar { to { height: 16px; opacity: .9; } }
+
+@media (max-width: 640px) {
+  .mira-backdrop { font-size: 42vw; }
+  .music-player { bottom: 1.25rem; left: 50%; transform: translateX(-50%); }
+  .music-player:hover { transform: translateX(-50%) translateY(-2px); }
+  .heartbeat-label { right: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mira-backdrop, .heartbeat-pulse, .sound-bars i { animation: none !important; }
 }
 
 @layer base {

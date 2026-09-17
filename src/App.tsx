@@ -1,7 +1,57 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Terminal, Lock, Heart as HeartIcon, Sparkles } from 'lucide-react';
+import { Lock, Pause, Play, Volume2 } from 'lucide-react';
 import TextHeart from './components/TextHeart';
+
+function MusicPlayer() {
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const toggle = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+      return;
+    }
+    await audio.play();
+    setPlaying(true);
+  };
+
+  return (
+    <>
+      <audio ref={audioRef} src="/mira-song.mp3" loop preload="metadata" />
+      <button className={`music-player ${playing ? 'is-playing' : ''}`} onClick={toggle} aria-label={playing ? 'Müziği duraklat' : 'Müziği çal'}>
+        <span className="music-icon">{playing ? <Pause size={15} /> : <Play size={15} fill="currentColor" />}</span>
+        <span className="music-copy"><strong>Angel · Massive Attack</strong><small>{playing ? 'şimdi çalıyor' : 'dinlemek için dokun'}</small></span>
+        <span className="sound-bars" aria-hidden="true"><i /><i /><i /><i /></span>
+      </button>
+    </>
+  );
+}
+
+function HeartbeatLine() {
+  return (
+    <div className="heartbeat-wrap" aria-hidden="true">
+      <div className="heartbeat-label"><Volume2 size={12} /><span>72 BPM</span></div>
+      <svg viewBox="0 0 900 100" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="neon-heartbeat" x1="0" x2="1">
+            <stop offset="0" stopColor="#ff1f8f" /><stop offset=".48" stopColor="#ff4df0" /><stop offset="1" stopColor="#32f6ff" />
+          </linearGradient>
+        </defs>
+        <motion.path className="heartbeat-base"
+          d="M0 52 H90 L105 47 L116 55 L128 52 L140 78 L158 18 L176 70 L190 52 H330 L342 48 L352 54 L364 52 L376 88 L398 8 L420 73 L438 52 H580 L592 48 L603 55 L615 52 L627 80 L646 16 L665 71 L681 52 H900"
+          initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ duration: 1.8, ease: 'easeOut' }} />
+        <path className="heartbeat-energy"
+          d="M0 52 H90 L105 47 L116 55 L128 52 L140 78 L158 18 L176 70 L190 52 H330 L342 48 L352 54 L364 52 L376 88 L398 8 L420 73 L438 52 H580 L592 48 L603 55 L615 52 L627 80 L646 16 L665 71 L681 52 H900" />
+      </svg>
+      <span className="heartbeat-pulse pulse-one" /><span className="heartbeat-pulse pulse-two" />
+    </div>
+  );
+}
 
 const Typewriter = ({ text, delay = 50, onComplete }: { text: string, delay?: number, onComplete?: () => void }) => {
   const [currentText, setCurrentText] = useState("");
@@ -108,6 +158,8 @@ export default function App() {
             animate={{ opacity: 1 }}
             className="relative w-full h-screen flex items-center justify-center overflow-hidden"
           >
+            <div className="mira-backdrop" aria-hidden="true">MİRA</div>
+            <HeartbeatLine />
             <TextHeart />
             
             <motion.div
@@ -116,8 +168,9 @@ export default function App() {
               transition={{ delay: 3, duration: 1.5 }}
               className="z-20 text-center"
             >
+              <p className="reveal-kicker">yalnızca senin için</p>
               <h2 className="text-pink-deep font-mono text-xl tracking-[0.3em] uppercase glow-text mb-2">
-                Decrypted
+                MİRA
               </h2>
               <div className="w-12 h-px bg-pink-deep/30 mx-auto mb-8" />
               
@@ -128,9 +181,11 @@ export default function App() {
                 }}
                 className="text-white/20 hover:text-white/60 transition-colors uppercase text-[10px] tracking-widest font-mono"
               >
-                Re-encrypt
+                yeniden şifrele
               </motion.button>
             </motion.div>
+
+            <MusicPlayer />
 
             {/* Subtle tech overlays */}
             <div className="absolute top-8 left-8 text-[10px] font-mono text-white/10 uppercase tracking-widest space-y-1">
@@ -140,7 +195,7 @@ export default function App() {
             </div>
             
             <div className="absolute bottom-8 right-8 text-[10px] font-mono text-white/10 uppercase tracking-widest">
-                heart_reveal // success
+                heart_reveal // mira
             </div>
           </motion.div>
         )}
@@ -148,4 +203,3 @@ export default function App() {
     </div>
   );
 }
-
